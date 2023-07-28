@@ -1,4 +1,32 @@
 
+
+Drop table if exists #PercentPopulationVaccinated
+Create table #PercentPopulationVaccinated
+(
+continent nvarchar(255), 
+location nvarchar(255), 
+date datetime, 
+population numeric,
+new_vaccinations numeric, 
+RollingPeopleVaccinated numeric
+)
+
+Insert into #PercentPopulationVaccinated
+select cod.continent, cod.location, cod.date, cod.population, cvac.new_vaccinations
+,sum(cast(cvac.new_vaccinations as int)) 
+Over (partition by cod.location order by cod.location, cod.date) RollingPeopleVaccinated
+from pp1..Coviddeaths cod
+join pp1..CovidVaccinations cvac
+on cod.location = cvac.location
+and cod.date = cvac.date
+--where cod.continent is not null
+--order by 2,3
+
+select *, (RollingPeopleVaccinated/population)*100 RollingVaccinatedPercentage
+from #PercentPopulationVaccinated
+
+
+  -- exploring the data
 select *
 from pp1..CovidDeaths
 order by 3,4
